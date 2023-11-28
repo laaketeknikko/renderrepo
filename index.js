@@ -5,6 +5,8 @@ app.use(express.json())
 const cors = require("cors")
 app.use(cors())
 
+app.use(express.static("front"))
+
 const morgan = require("morgan")
 
 app.use(morgan((tokens, req, res) => {
