@@ -26,6 +26,7 @@ const phonebookEntry = mongoose.model("phonebookEntry", phonebookEntrySchema)
 
 
 // Insertion
+// Only allows name and number
 if (process.argv.length === 5) {
     const newEntry = new phonebookEntry({
         name: process.argv[3],
