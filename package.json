@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node index.js",
     "dev": "nodemon index.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build:ui": "@powershell rm -r -force front && @powershell mkdir front && cd ../renderfrontend && @powershell rm -r -force dist && npm run build && @powershell Copy-Item dist/* -Recurse -force ../renderrepo/front"
   },
   "author": "",
   "license": "ISC",
