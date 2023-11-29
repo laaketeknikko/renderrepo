@@ -32,27 +32,26 @@ app.get('/api/persons', (request, response) => {
     })
 })
 
-app.get("/api/persons/:id", (request, response) => {
-    const person = persons.find(person => person.id == request.params.id)
-    if (!person) {
-        response.sendStatus(404)
-    }
-    else {
-        response.json(person)
-    }
+app.get("/api/notes/:id", (request, response) => {
+    phonebookEntry.findById(request.params.id)
+    .then(entry => {
+        response.json(entry)
+    })
 })
 
 app.get("/info", (request, response) => {
-    let responseString = `Phonebook has info for ${persons.length} people.<br />`
-    responseString += `${Date(Date.now()).toString()}`
-    response.send(responseString)
+    phonebookEntry.find({}).then(entries => {
+        let responseString = `Phonebook has info for ${entries.length} people.<br />`
+        responseString += `${Date(Date.now()).toString()}`
+        response.send(responseString)
+    })
 })
 
 
-
 app.delete("/api/persons/:id", (request, response) => {
-    persons = persons.filter(person => person.id != request.params.id)
-    response.sendStatus(200)
+    phonebookEntry.findById(request.params.id)
+    .then(entry => entry.deleteOne())
+    .then(result => response.sendStatus(200))
 })
 
 
@@ -61,26 +60,25 @@ const validateAddPerson = (personData) => {
         return false
     }
 
-    if (persons.find(person => person.name.toLowerCase() === personData.name.toLowerCase())) {
+    /*if (persons.find(person => person.name.toLowerCase() === personData.name.toLowerCase())) {
         return false
-    }
+    }*/
 
     return true
 }
 
+
 app.post("/api/persons", (request, response) => {
-    const newPerson = {...request.body, id: Math.random()}
+    const newPerson = {...request.body}
     
     if (!validateAddPerson(newPerson)) {
         response.status(400)
         response.send("Missing name or number, or entry for person already exists.")
     }
-    else {
-        persons.push(newPerson)
-        response.sendStatus(200)
-    }    
-})
 
+    new phonebookEntry(newPerson).save()
+    .then(savedEntry => response.json(savedEntry))
+})
 
 
 const PORT = process.env.PORT || 3001
