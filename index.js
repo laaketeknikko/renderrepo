@@ -27,6 +27,7 @@ app.use(morgan((tokens, req, res) => {
 
 
 app.get('/api/persons', (request, response) => {
+    console.log("get api/persons")
     phonebookEntry.find({}).then(entries => {
         response.json(entries)
     })
