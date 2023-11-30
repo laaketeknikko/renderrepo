@@ -2,14 +2,11 @@ require("dotenv").config()
 
 const express = require("express")
 const app = express()
+app.use(express.static("front"))
 app.use(express.json())
 
 const cors = require("cors")
 app.use(cors())
-
-const phonebookEntry = require("./mongo_models/PhonebookEntry")
-
-app.use(express.static("front"))
 
 const morgan = require("morgan")
 
@@ -24,35 +21,41 @@ app.use(morgan((tokens, req, res) => {
     ].join(" ")
 }))
 
+const phonebookEntry = require("./mongo_models/PhonebookEntry")
 
 
-app.get('/api/persons', (request, response) => {
+
+app.get('/api/persons', (request, response, next) => {
     console.log("get api/persons")
     phonebookEntry.find({}).then(entries => {
         response.json(entries)
     })
+    .catch(error => next(error))
 })
 
-app.get("/api/notes/:id", (request, response) => {
+app.get("/api/notes/:id", (request, response, next) => {
     phonebookEntry.findById(request.params.id)
     .then(entry => {
         response.json(entry)
     })
+    .catch(error => next(error))
 })
 
-app.get("/info", (request, response) => {
+app.get("/info", (request, response, next) => {
     phonebookEntry.find({}).then(entries => {
         let responseString = `Phonebook has info for ${entries.length} people.<br />`
         responseString += `${Date(Date.now()).toString()}`
         response.send(responseString)
     })
+    .catch(error => next(error))
 })
 
 
-app.delete("/api/persons/:id", (request, response) => {
+app.delete("/api/persons/:id", (request, response, next) => {
     phonebookEntry.findById(request.params.id)
     .then(entry => entry.deleteOne())
     .then(result => response.sendStatus(200))
+    .catch(error => next(error))
 })
 
 
@@ -69,7 +72,7 @@ const validateAddPerson = (personData) => {
 }
 
 
-app.post("/api/persons", (request, response) => {
+app.post("/api/persons", (request, response, next) => {
     const newPerson = {...request.body}
     
     if (!validateAddPerson(newPerson)) {
@@ -79,7 +82,31 @@ app.post("/api/persons", (request, response) => {
 
     new phonebookEntry(newPerson).save()
     .then(savedEntry => response.json(savedEntry))
+    .catch(error => next(error))
 })
+
+
+const unknownEndpoint = (request, response) => {
+    response.status(404).send({ error: 'unknown endpoint' })
+}
+app.use(unknownEndpoint)
+
+
+const errorHandler = (error, request, response, next) => {
+    console.log("in errrohandler")
+    
+    console.error(error.message)
+  
+    if (error.name === 'CastError') {
+        console.log("in error.name casterrro")
+      return response.status(400).send({ error: 'malformatted id' })
+    } 
+  
+    console.log("after errro name csaterror")
+    next(error)
+}
+app.use(errorHandler)
+
 
 
 const PORT = process.env.PORT || 3001
