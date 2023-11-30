@@ -64,25 +64,43 @@ const validateAddPerson = (personData) => {
         return false
     }
 
-    /*if (persons.find(person => person.name.toLowerCase() === personData.name.toLowerCase())) {
-        return false
-    }*/
-
     return true
 }
 
-
-app.post("/api/persons", (request, response, next) => {
+const postPerson = (request, response, next) => {
+    console.log("in post person")
     const newPerson = {...request.body}
     
     if (!validateAddPerson(newPerson)) {
         response.status(400)
-        response.send("Missing name or number, or entry for person already exists.")
+        response.send("Missing name or number.")
     }
 
-    new phonebookEntry(newPerson).save()
-    .then(savedEntry => response.json(savedEntry))
-    .catch(error => next(error))
+    phonebookEntry.find({name: newPerson.name})
+    .then(result => {
+        
+        // Person doesn't exist in the database
+        if (result.length === 0) {
+            new phonebookEntry(newPerson).save()
+            .then(savedEntry => response.json(savedEntry))
+            .catch(error => next(error))        
+        }
+        else {
+            phonebookEntry.updateOne({name: result[0].name}, {number: newPerson.number})
+            .then(updateResult => {
+                console.log("updated something", updateResult)
+            })
+            console.log("result", result[0].name, newPerson.number)
+            response.status(200).send("success")
+        }
+    })
+}
+app.post("/api/persons", postPerson)
+
+// Frontend implements PUT, redirect to post()
+app.put("/api/persons/:id", (request, response, next) => {
+    console.log("in put person")
+    return postPerson(request, response, next)    
 })
 
 
@@ -93,16 +111,12 @@ app.use(unknownEndpoint)
 
 
 const errorHandler = (error, request, response, next) => {
-    console.log("in errrohandler")
-    
     console.error(error.message)
   
     if (error.name === 'CastError') {
-        console.log("in error.name casterrro")
       return response.status(400).send({ error: 'malformatted id' })
     } 
   
-    console.log("after errro name csaterror")
     next(error)
 }
 app.use(errorHandler)
