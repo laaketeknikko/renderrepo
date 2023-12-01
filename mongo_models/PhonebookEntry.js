@@ -12,8 +12,15 @@ mongoose.connect(process.env.MONGODB_URI)
 
 
 const phonebookEntrySchema = new mongoose.Schema({
-    name: String,
-    number: String
+    name: {
+        type: String,
+        minLength: [3, "Name must be at least 3 characters long."],
+        required: [true, "Name is a required field."]
+    },
+    number: {
+        type: String,
+        required: [true, "Number is a required field."]
+    }
 })
 
 phonebookEntrySchema.set('toJSON', {
