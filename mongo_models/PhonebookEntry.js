@@ -3,18 +3,18 @@ const mongoose = require("mongoose")
 mongoose.set("strictQuery", false)
 
 mongoose.connect(process.env.MONGODB_URI)
-.then(result => {
-    console.log("Connected to MongoDB")
-})
-.catch((error) => {
-    console.log("Error connecting to MongoDB:", error.message)
-})
+    .then(() => {
+        console.log("Connected to MongoDB")
+    })
+    .catch((error) => {
+        console.log("Error connecting to MongoDB:", error.message)
+    })
 
 const numberValidator = (value) => {
     const re = /^[0-9]{2,3}-[0-9]+/
 
-console.log("in numbervalidator, value is", value)
-console.log("validator reuslt is", value.length, re.exec(value))
+    console.log("in numbervalidator, value is", value)
+    console.log("validator reuslt is", value.length, re.exec(value))
     return value.length >= 8 && re.exec(value)
 }
 
@@ -34,11 +34,11 @@ const phonebookEntrySchema = new mongoose.Schema({
     }
 })
 
-phonebookEntrySchema.set('toJSON', {
+phonebookEntrySchema.set("toJSON", {
     transform: (document, returnedObject) => {
-      returnedObject.id = returnedObject._id.toString()
-      delete returnedObject._id
-      delete returnedObject.__v
+        returnedObject.id = returnedObject._id.toString()
+        delete returnedObject._id
+        delete returnedObject.__v
     }
 })
 

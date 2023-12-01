@@ -25,22 +25,22 @@ const phonebookEntry = require("./mongo_models/PhonebookEntry")
 
 
 
-app.get('/api/persons', (request, response, next) => {
+app.get("/api/persons", (request, response, next) => {
     console.log("get api/persons")
     phonebookEntry.find({}).then(entries => {
         response.json(entries)
     })
-    .catch(error => next(error))
+        .catch(error => next(error))
 })
 
 app.get("/api/persons/:id", (request, response, next) => {
     console.log("in persons:id with", request.params.id)
-    phonebookEntry.findOne({_id: request.params.id})
+    phonebookEntry.findOne({ _id: request.params.id })
     //phonebookEntry.findById(request.params.id)
-    .then(entry => {
-        response.json(entry)
-    })
-    .catch(error => next(error))
+        .then(entry => {
+            response.json(entry)
+        })
+        .catch(error => next(error))
 })
 
 app.get("/info", (request, response, next) => {
@@ -49,46 +49,46 @@ app.get("/info", (request, response, next) => {
         responseString += `${Date(Date.now()).toString()}`
         response.send(responseString)
     })
-    .catch(error => next(error))
+        .catch(error => next(error))
 })
 
 
 app.delete("/api/persons/:id", (request, response, next) => {
     phonebookEntry.findById(request.params.id)
-    .then(entry => entry.deleteOne())
-    .then(result => response.sendStatus(200))
-    .catch(error => next(error))
+        .then(entry => entry.deleteOne())
+        .then(() => response.sendStatus(200))
+        .catch(error => next(error))
 })
 
 
 const postPerson = (request, response, next) => {
     console.log("in post person")
-    const newPerson = {...request.body}
-    
+    const newPerson = { ...request.body }
 
-    phonebookEntry.find({name: newPerson.name})
-    .then(result => {
-        
-        // Person doesn't exist in the database
-        if (result.length === 0) {
-            new phonebookEntry(newPerson).save()
-            .then(savedEntry => response.json(savedEntry))
-            .catch(error => next(error))        
-        }
-        else {
-            phonebookEntry.updateOne(
-                {name: result[0].name},
-                {number: newPerson.number},
-                {runValidators: true})
-            .then(updateResult => {
-                console.log("updated something", updateResult)
-            })
-            .catch(error => next(error))
-            console.log("result", result[0].name, newPerson.number)
-            response.status(200).send("success")
-        }
-    })
-    .catch(error => next(error))
+
+    phonebookEntry.find({ name: newPerson.name })
+        .then(result => {
+
+            // Person doesn't exist in the database
+            if (result.length === 0) {
+                new phonebookEntry(newPerson).save()
+                    .then(savedEntry => response.json(savedEntry))
+                    .catch(error => next(error))
+            }
+            else {
+                phonebookEntry.updateOne(
+                    { name: result[0].name },
+                    { number: newPerson.number },
+                    { runValidators: true })
+                    .then(updateResult => {
+                        console.log("updated something", updateResult)
+                    })
+                    .catch(error => next(error))
+                console.log("result", result[0].name, newPerson.number)
+                response.status(200).send("success")
+            }
+        })
+        .catch(error => next(error))
 }
 app.post("/api/persons", postPerson)
 
@@ -98,51 +98,51 @@ app.post("/api/persons", postPerson)
 // PUT and POST combinations of existing and non-existing names and ids.
 // The requirements are very vague.
 app.put("/api/persons/:id", (request, response, next) => {
-    
+
     phonebookEntry.findById(request.params.id)
-    .then(result => {
-        console.log("put findbyid result", result)
-        console.log("request.body.name", request.body.name)
-        if (result && result.name == request.body.name) {
-            return postPerson(request, response, next)
-        }
-        // Id is same, name is different
-        else {
-            console.log("updateone in put")
-            phonebookEntry.updateOne(
-                {_id: request.params.id},
-                {
-                    name: request.body.name,
-                    number: request.body.number
-                },
-                {runValidators: true})
-                .then(updateResult => {
-                    console.log("put updated")
-                    response.json(updateResult)
-                })
-                .catch(error => next(error))
-        }
-    })
-    .catch(error => next(error))
+        .then(result => {
+            console.log("put findbyid result", result)
+            console.log("request.body.name", request.body.name)
+            if (result && result.name == request.body.name) {
+                return postPerson(request, response, next)
+            }
+            // Id is same, name is different
+            else {
+                console.log("updateone in put")
+                phonebookEntry.updateOne(
+                    { _id: request.params.id },
+                    {
+                        name: request.body.name,
+                        number: request.body.number
+                    },
+                    { runValidators: true })
+                    .then(updateResult => {
+                        console.log("put updated")
+                        response.json(updateResult)
+                    })
+                    .catch(error => next(error))
+            }
+        })
+        .catch(error => next(error))
 })
 
 
 const unknownEndpoint = (request, response) => {
-    response.status(404).send({ error: 'unknown endpoint' })
+    response.status(404).send({ error: "unknown endpoint" })
 }
 app.use(unknownEndpoint)
 
 
 const errorHandler = (error, request, response, next) => {
     console.error(error.message)
-  
-    if (error.name === 'CastError') {
-      return response.status(400).send({ error: 'malformatted id' })
+
+    if (error.name === "CastError") {
+        return response.status(400).send({ error: "malformatted id" })
     }
     else if (error.name === "ValidationError") {
-        return response.status(400).json({error: error.message})
+        return response.status(400).json({ error: error.message })
     }
-  
+
     next(error)
 }
 app.use(errorHandler)

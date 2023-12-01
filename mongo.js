@@ -33,21 +33,21 @@ if (process.argv.length === 5) {
         number: process.argv[4]
     })
     newEntry.save()
-    .then(result => {
-        console.log(`Added ${newEntry.name} number ${newEntry.number} to phonebook`)
-        mongoose.connection.close()
-    })
+        .then(() => {
+            console.log(`Added ${newEntry.name} number ${newEntry.number} to phonebook`)
+            mongoose.connection.close()
+        })
 }
 
 // Listing
 else {
     console.log("phonebook:")
     phonebookEntry.find({})
-    .then(result => {
-        result.forEach(entry => {
-            console.log(`${entry.name} ${entry.number}`)
+        .then(result => {
+            result.forEach(entry => {
+                console.log(`${entry.name} ${entry.number}`)
+            })
+            mongoose.connection.close()
         })
-        mongoose.connection.close()
-    })
 }
 

@@ -7,7 +7,9 @@
     "start": "node index.js",
     "dev": "nodemon index.js",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build:ui": "@powershell rm -r -force front && @powershell mkdir front && cd ../renderfrontend && @powershell rm -r -force dist && npm run build && @powershell Copy-Item dist/* -Recurse -force ../renderrepo/front"
+    "build:ui": "@powershell rm -r -force front && @powershell mkdir front && cd ../renderfrontend && @powershell rm -r -force dist && npm run build && @powershell Copy-Item dist/* -Recurse -force ../renderrepo/front",
+    "lint-check": "eslint .",
+    "lint-fix": "eslint . --fix"
   },
   "author": "",
   "license": "ISC",
@@ -19,6 +21,7 @@
   },
   "devDependencies": {
     "dotenv": "^16.3.1",
+    "eslint": "^8.54.0",
     "nodemon": "^3.0.1"
   }
 }
