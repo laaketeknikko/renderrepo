@@ -10,6 +10,13 @@ mongoose.connect(process.env.MONGODB_URI)
     console.log("Error connecting to MongoDB:", error.message)
 })
 
+const numberValidator = (value) => {
+    const re = /^[0-9]{2,3}-[0-9]+/
+
+console.log("in numbervalidator, value is", value)
+console.log("validator reuslt is", value.length, re.exec(value))
+    return value.length >= 8 && re.exec(value)
+}
 
 const phonebookEntrySchema = new mongoose.Schema({
     name: {
@@ -19,6 +26,10 @@ const phonebookEntrySchema = new mongoose.Schema({
     },
     number: {
         type: String,
+        validate: {
+            validator: numberValidator,
+            message: "The number must be of format xx(x)-xxxxxx. Number must be at least 8 characters long."
+        },
         required: [true, "Number is a required field."]
     }
 })
