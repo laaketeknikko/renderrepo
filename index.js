@@ -33,8 +33,10 @@ app.get('/api/persons', (request, response, next) => {
     .catch(error => next(error))
 })
 
-app.get("/api/notes/:id", (request, response, next) => {
-    phonebookEntry.findById(request.params.id)
+app.get("/api/persons/:id", (request, response, next) => {
+    console.log("in persons:id with", request.params.id)
+    phonebookEntry.findOne({_id: request.params.id})
+    //phonebookEntry.findById(request.params.id)
     .then(entry => {
         response.json(entry)
     })
@@ -94,13 +96,41 @@ const postPerson = (request, response, next) => {
             response.status(200).send("success")
         }
     })
+    .catch(error => next(error))
 }
 app.post("/api/persons", postPerson)
 
-// Frontend implements PUT, redirect to post()
+// put() handles case when name and number are different for existing id,
+// post() handles the case when name is the same as existing.
+// I am confused about what is supposed to happen with different
+// PUT and POST combinations of existing and non-existing names and ids.
+// The requirements are very vague.
 app.put("/api/persons/:id", (request, response, next) => {
-    console.log("in put person")
-    return postPerson(request, response, next)    
+    
+    phonebookEntry.findById(request.params.id)
+    .then(result => {
+        console.log("put findbyid result", result)
+        console.log("request.body.name", request.body.name)
+        if (result && result.name == request.body.name) {
+            return postPerson(request, response, next)
+        }
+        // Id is same, name is different
+        else {
+            console.log("updateone in put")
+            phonebookEntry.updateOne(
+                {_id: request.params.id},
+                {
+                    name: request.body.name,
+                    number: request.body.number
+                })
+                .then(updateResult => {
+                    console.log("put updated")
+                    response.json(updateResult)
+                })
+                .catch(error => next(error))
+        }
+    })
+    .catch(error => next(error))
 })
 
 
